@@ -1,16 +1,15 @@
-/*
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';*/
 import { useState } from 'react';
 import axios from 'axios';
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const API_PATH = import.meta.env.VITE_API_PATH;
 
 function App() {
   const [isAuth, steIsAuth] = useState(false);
 
   const [account, setAccount] = useState({
-    username: 'example@test.com',
-    password: 'example',
+    username: '',
+    password: '',
   });
 
   const [tempProduct, setTempProduct] = useState({});
@@ -23,27 +22,30 @@ function App() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    /*console.log(account);
-    console.log(import.meta.env.VITE_BASE_URL);
-    console.log(import.meta.env.VITE_API_PATH);*/
     axios
-      .post(`${import.meta.env.VITE_BASE_URL}/v2/admin/signin`, account)
+      .post(`${BASE_URL}/v2/admin/signin`, account)
       .then((res) => {
         const { token, expired } = res.data;
-        console.log(token, expired);
         document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
         axios.defaults.headers.common['Authorization'] = token;
         axios
-          .get(
-            `${import.meta.env.VITE_BASE_URL}/v2/api/${
-              import.meta.env.VITE_API_PATH
-            }/admin/products`
-          )
+          .get(`${BASE_URL}/v2/api/${API_PATH}/admin/products`)
           .then((res) => setProducts(res.data.products))
           .catch((error) => console.error(error));
         steIsAuth(true);
       })
       .catch(() => alert('登入失敗'));
+  };
+
+  const checkUserLogin = () => {
+    axios
+      .post(`${BASE_URL}/v2/api/user/check`)
+      .then(() => {
+        alert('登入成功');
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (
@@ -52,6 +54,13 @@ function App() {
         <div className="container py-5">
           <div className="row">
             <div className="col-6">
+              <button
+                type="button"
+                className="btn btn-secondary mb-3"
+                onClick={checkUserLogin}
+              >
+                是否登入
+              </button>
               <h2>產品列表</h2>
               <table className="table">
                 <thead>
